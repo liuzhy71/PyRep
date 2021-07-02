@@ -1,0 +1,390 @@
+from PyRep.pyrep.backend import sim, utils
+from PyRep.pyrep.objects.object import Object
+from PyRep.pyrep.objects.dummy import Dummy
+from PyRep.pyrep.robots.configuration_paths.arm_configuration_path import (
+    ArmConfigurationPath)
+from PyRep.pyrep.robots.robot_component import RobotComponent
+from PyRep.pyrep.objects.cartesian_path import CartesianPath
+from PyRep.pyrep.errors import ConfigurationError, ConfigurationPathError, IKError
+from PyRep.pyrep.const import ConfigurationPathAlgorithms as Algos
+from PyRep.pyrep.const import PYREP_SCRIPT_TYPE
+from typing import List, Union
+import numpy as np
+
+
+class ParallelManipulator(RobotComponent):
+    """
+    Base class representing a parallel manipulator.
+    对于并联机器人而言，直接控制关节角度不能很好的实现机器人末端的控制，因为可能会出现机构运动冗余的问题。
+    但是，总可以选出一些特定的关节，进行运动学控制，实现机器人的正运动学控制。
+    所以，在这个类的实现里，分别实现并联机器人的正运动学，以及逆运动学
+    """
+    def __init__(self,
+                 count: int,
+                 name: str,
+                 num_joints: int,
+                 joint_names: [],
+                 base_name: str = None,
+                 max_velocity=0.1,
+                 max_acceleration=1.0,
+                 max_jerk=1000):
+        """
+        count: is used for when we have multiple copies of arms
+        name: name of the robot
+        num_joints: number of independent controlled joints
+        base_name: the base name of the robot
+        max_velocity: max joint velocity for revolute joints: deg/s
+                                         for prismatic joints: m/s
+        max_acceleration: 最大加速度，单位依照前面的
+        max_jerk: 最大加加速度
+        """
+        super().__init__(count, name, joint_names, base_name)
+
+        # 运动规划参数
+        self.max_velocity = max_velocity
+        self.max_acceleration = max_acceleration
+        self.max_jerk = max_jerk
+
+        # 运动规划的handle，主要是ik group的handle
+        suffix = '' if count == 0 else '#%d' % (count - 1)
+        # 这个地方存疑，因为函数的功能是创建dummy，但是我场景里面已经有dummy了
+        self._ik_target = Dummy('%s_target%s' % (name, suffix))
+        self._ik_tip = Dummy('%s_tip%s' % (name, suffix))
+        # self._ik_target = sim.simGetObjectHandle('%s_target%s' % (name, suffix))
+        # self._ik_tip = sim.simGetObjectHandle('%s_tip%s' % (name, suffix))
+        self._ik_group = sim.simGetIkGroupHandle('%s_ik%s' % (name, suffix))
+        self._ik_group_damped = sim.simGetIkGroupHandle('%s_ik_damped%s' % (name, suffix))
+        self._collision_collection = sim.simGetCollectionHandle(
+            '%s_collection%s' % (name, suffix))
+
+    def set_ik_element_properties(self, constraint_x=True, constraint_y=True,
+                                  constraint_z=True,
+                                  constraint_alpha_beta=True,
+                                  constraint_gamma=True) -> None:
+
+        constraints = 0
+        if constraint_x:
+            constraints |= sim.sim_ik_x_constraint
+        if constraint_y:
+            constraints |= sim.sim_ik_y_constraint
+        if constraint_z:
+            constraints |= sim.sim_ik_z_constraint
+        if constraint_alpha_beta:
+            constraints |= sim.sim_ik_alpha_beta_constraint
+        if constraint_gamma:
+            constraints |= sim.sim_ik_gamma_constraint
+        sim.simSetIkElementProperties(
+            ikGroupHandle=self._ik_group,
+            tipDummyHandle=self._ik_tip.get_handle(),
+            constraints=constraints,
+            precision=None,
+            weight=None,
+        )
+        sim.simSetIkElementProperties(
+            ikGroupHandle=self._ik_group_damped,
+            tipDummyHandle=self._ik_tip.get_handle(),
+            constraints=constraints,
+            precision=None,
+            weight=None,
+        )
+
+    def set_ik_group_properties(self, resolution_method='pseudo_inverse', max_iterations=6, dls_damping=0.1) -> None:
+        try:
+            res_method = {'pseudo_inverse': sim.sim_ik_pseudo_inverse_method,
+                          'damped_least_squares': sim.sim_ik_damped_least_squares_method,
+                          'jacobian_transpose': sim.sim_ik_jacobian_transpose_method}[resolution_method]
+        except KeyError:
+            raise Exception('Invalid resolution method,'
+                            'Must be one of ["pseudo_inverse" | "damped_least_squares" | "jacobian_transpose"]')
+        sim.simSetIkGroupProperties(
+            ikGroupHandle=self._ik_group,
+            resolutionMethod=res_method,
+            maxIterations=max_iterations,
+            damping=dls_damping
+        )
+
+    def get_configs_for_tip_pose(self,
+                                 position: Union[List[float], np.ndarray],
+                                 euler: Union[List[float], np.ndarray] = None,
+                                 quaternion: Union[List[float], np.ndarray] = None,
+                                 ignore_collisions=False,
+                                 trials=300, max_configs=60,
+                                 relative_to: Object = None
+                                 ) -> List[List[float]]:
+        """
+        Gets a valid joint configuration for a desired end effector pose.
+        Must specify either rotation in euler or quaternions, but not both!
+        :param position: The x, y, z position of the target.
+        :param euler: The x, y, z orientation of the target (in radians).
+        :param quaternion: A list containing the quaternion (x,y,z,w).
+        :param ignore_collisions: If collision checking should be disabled.
+        :param trials: The maximum number of attempts to reach max_configs
+        :param max_configs: The maximum number of configurations we want to
+            generate before ranking them.
+        :param relative_to: Indicates relative to which reference frame we want
+        the target pose. Specify None to retrieve the absolute pose,
+        or an Object relative to whose reference frame we want the pose.
+        :raises: ConfigurationError if no joint configuration could be found.
+        :return: A list of valid joint configurations for the desired
+        end effector pose.
+        """
+
+        if not ((euler is None) ^ (quaternion is None)):
+            raise ConfigurationPathError(
+                'Specify either euler or quaternion values, but not both.')
+
+        prev_pose = self._ik_target.get_pose()
+        self._ik_target.set_position(position, relative_to)
+        if euler is not None:
+            self._ik_target.set_orientation(euler, relative_to)
+        elif quaternion is not None:
+            self._ik_target.set_quaternion(quaternion, relative_to)
+
+        handles = [j.get_handle() for j in self.joints]
+
+        # Despite verbosity being set to 0, OMPL spits out a lot of text
+        with utils.suppress_std_out_and_err():
+            _, ret_floats, _, _ = utils.script_call(
+                'findSeveralCollisionFreeConfigsAndCheckApproach@PyRep', PYREP_SCRIPT_TYPE,
+                ints=[self._ik_group, self._collision_collection,
+                      int(ignore_collisions), trials, max_configs] + handles)
+        self._ik_target.set_pose(prev_pose)
+
+        if len(ret_floats) == 0:
+            raise ConfigurationError(
+                'Could not find a valid joint configuration for desired end effector pose.')
+
+        num_configs = int(len(ret_floats)/len(handles))
+        return [[ret_floats[len(handles)*i+j] for j in range(len(handles))] for i in range(num_configs)]
+
+    def solve_ik(self, position: Union[List[float], np.ndarray],
+                 euler: Union[List[float], np.ndarray] = None,
+                 quaternion: Union[List[float], np.ndarray] = None,
+                 relative_to: Object = None) -> List[float]:
+        """
+        Solves an IK group and returns the calculated joint values.
+
+        Must specify either rotation in euler or quaternions, but not both!
+
+        :param position: The x, y, z position of the target.
+        :param euler: The x, y, z orientation of the target (in radians).
+        :param quaternion: A list containing the quaternion (x,y,z,w).
+        :param relative_to: Indicates relative to which reference frame we want
+        the target pose. Specify None to retrieve the absolute pose,
+        or an Object relative to whose reference frame we want the pose.
+        :return: A list containing the calculated joint values.
+        """
+        self._ik_target.set_position(position, relative_to)
+        if euler is not None:
+            self._ik_target.set_orientation(euler, relative_to)
+        elif quaternion is not None:
+            self._ik_target.set_quaternion(quaternion, relative_to)
+
+        ik_result, joint_values = sim.simCheckIkGroup(
+            self._ik_group, [j.get_handle() for j in self.joints])
+        if ik_result == sim.sim_ikresult_fail:
+            raise IKError('IK failed. Perhaps the distance was between the tip '
+                          ' and target was too large.')
+        elif ik_result == sim.sim_ikresult_not_performed:
+            raise IKError('IK not performed.')
+        return joint_values
+
+    def get_path_from_cartesian_path(self, path: CartesianPath
+                                     ) -> ArmConfigurationPath:
+        """Translate a path from cartesian space, to arm configuration space.
+
+        Note: It must be possible to reach the start of the path via a linear
+        path, otherwise an error will be raised.
+
+        :param path: A :py:class:`CartesianPath` instance to be translated to
+            a configuration-space path.
+        :raises: ConfigurationPathError if no path could be created.
+
+        :return: A path in the arm configuration space.
+        """
+        handles = [j.get_handle() for j in self.joints]
+        _, ret_floats, _, _ = utils.script_call(
+            'getPathFromCartesianPath@PyRep', PYREP_SCRIPT_TYPE,
+            ints=[path.get_handle(), self._ik_group,
+                  self._ik_target.get_handle()] + handles)
+        if len(ret_floats) == 0:
+            raise ConfigurationPathError(
+                'Could not create a path from cartesian path.')
+        return ArmConfigurationPath(self, ret_floats)
+
+    def get_linear_path(self, position: Union[List[float], np.ndarray],
+                        euler: Union[List[float], np.ndarray] = None,
+                        quaternion: Union[List[float], np.ndarray] = None,
+                        steps=50, ignore_collisions=False,
+                        relative_to: Object = None) -> ArmConfigurationPath:
+        """Gets a linear configuration path given a target pose.
+
+        Generates a path that drives a robot from its current configuration
+        to its target dummy in a straight line (i.e. shortest path in Cartesian
+        space).
+
+        Must specify either rotation in euler or quaternions, but not both!
+
+        :param position: The x, y, z position of the target.
+        :param euler: The x, y, z orientation of the target (in radians).
+        :param quaternion: A list containing the quaternion (x,y,z,w).
+        :param steps: The desired number of path points. Each path point
+            contains a robot configuration. A minimum of two path points is
+            required. If the target pose distance is large, a larger number
+            of steps leads to better results for this function.
+        :param ignore_collisions: If collision checking should be disabled.
+        :param relative_to: Indicates relative to which reference frame we want
+        the target pose. Specify None to retrieve the absolute pose,
+        or an Object relative to whose reference frame we want the pose.
+        :raises: ConfigurationPathError if no path could be created.
+
+        :return: A linear path in the arm configuration space.
+        """
+        if not ((euler is None) ^ (quaternion is None)):
+            raise ConfigurationPathError(
+                'Specify either euler or quaternion values, but not both.')
+
+        prev_pose = self._ik_target.get_pose()
+        self._ik_target.set_position(position, relative_to)
+        if euler is not None:
+            self._ik_target.set_orientation(euler, relative_to)
+        elif quaternion is not None:
+            self._ik_target.set_quaternion(quaternion, relative_to)
+        handles = [j.get_handle() for j in self.joints]
+
+        # Despite verbosity being set to 0, OMPL spits out a lot of text
+        with utils.suppress_std_out_and_err():
+            _, ret_floats, _, _ = utils.script_call(
+                'getLinearPath@PyRep', PYREP_SCRIPT_TYPE,
+                ints=[steps, self._ik_group, self._collision_collection,
+                      int(ignore_collisions)] + handles)
+        self._ik_target.set_pose(prev_pose)
+
+        if len(ret_floats) == 0:
+            raise ConfigurationPathError('Could not create path.')
+        return ArmConfigurationPath(self, ret_floats)
+
+    def get_nonlinear_path(self, position: Union[List[float], np.ndarray],
+                           euler: Union[List[float], np.ndarray] = None,
+                           quaternion: Union[List[float], np.ndarray] = None,
+                           ignore_collisions=False,
+                           trials=100, max_configs=60, trials_per_goal=6,
+                           algorithm=Algos.SBL, relative_to: Object = None
+                           ) -> ArmConfigurationPath:
+        """Gets a non-linear (planned) configuration path given a target pose.
+
+        A path is generated by finding several configs for a pose, and ranking
+        them according to the distance in configuration space (smaller is
+        better).
+
+        Must specify either rotation in euler or quaternions, but not both!
+
+        :param position: The x, y, z position of the target.
+        :param euler: The x, y, z orientation of the target (in radians).
+        :param quaternion: A list containing the quaternion (x,y,z,w).
+        :param ignore_collisions: If collision checking should be disabled.
+        :param trials: The maximum number of attempts to reach max_configs
+        :param max_configs: The maximum number of configurations we want to
+            generate before ranking them.
+        :param trials_per_goal: The number of paths per config we want to trial.
+        :param algorithm: The algorithm for path planning to use.
+        :param relative_to: Indicates relative to which reference frame we want
+        the target pose. Specify None to retrieve the absolute pose,
+        or an Object relative to whose reference frame we want the pose.
+        :raises: ConfigurationPathError if no path could be created.
+
+        :return: A non-linear path in the arm configuration space.
+        """
+
+        if not ((euler is None) ^ (quaternion is None)):
+            raise ConfigurationPathError(
+                'Specify either euler or quaternion values, but not both.')
+
+        prev_pose = self._ik_target.get_pose()
+        self._ik_target.set_position(position, relative_to)
+        if euler is not None:
+            self._ik_target.set_orientation(euler, relative_to)
+        elif quaternion is not None:
+            self._ik_target.set_quaternion(quaternion, relative_to)
+
+        handles = [j.get_handle() for j in self.joints]
+
+        # Despite verbosity being set to 0, OMPL spits out a lot of text
+        with utils.suppress_std_out_and_err():
+            _, ret_floats, _, _ = utils.script_call(
+                'getNonlinearPath@PyRep', PYREP_SCRIPT_TYPE,
+                ints=[self._ik_group, self._collision_collection,
+                      int(ignore_collisions), trials, max_configs,
+                      trials_per_goal] + handles, strings=[algorithm.value])
+        self._ik_target.set_pose(prev_pose)
+
+        if len(ret_floats) == 0:
+            raise ConfigurationPathError('Could not create path.')
+        return ArmConfigurationPath(self, ret_floats)
+
+    def get_path(self, position: Union[List[float], np.ndarray],
+                 euler: Union[List[float], np.ndarray] = None,
+                 quaternion: Union[List[float], np.ndarray] = None,
+                 ignore_collisions=False,
+                 trials=100, max_configs=60, trials_per_goal=6,
+                 algorithm=Algos.SBL, relative_to: Object = None
+                 ) -> ArmConfigurationPath:
+        """Tries to get a linear path, failing that tries a non-linear path.
+
+        Must specify either rotation in euler or quaternions, but not both!
+
+        :param position: The x, y, z position of the target.
+        :param euler: The x, y, z orientation of the target (in radians).
+        :param quaternion: A list containing the quaternion (x,y,z,w).
+        :param ignore_collisions: If collision checking should be disabled.
+        :param trials: The maximum number of attempts to reach max_configs.
+            (Only applicable if a non-linear path is needed)
+        :param max_configs: The maximum number of configurations we want to
+            generate before ranking them.
+            (Only applicable if a non-linear path is needed)
+        :param trials_per_goal: The number of paths per config we want to trial.
+            (Only applicable if a non-linear path is needed)
+        :param algorithm: The algorithm for path planning to use.
+            (Only applicable if a non-linear path is needed)
+        :param relative_to: Indicates relative to which reference frame we want
+        the target pose. Specify None to retrieve the absolute pose,
+        or an Object relative to whose reference frame we want the pose.
+
+        :raises: ConfigurationPathError if neither a linear or non-linear path
+            can be created.
+        :return: A linear or non-linear path in the arm configuration space.
+        """
+        try:
+            p = self.get_linear_path(position, euler, quaternion,
+                                     ignore_collisions=ignore_collisions,
+                                     relative_to=relative_to)
+            return p
+        except ConfigurationPathError:
+            pass  # Allowed. Try again, but with non-linear.
+
+        # This time if an exception is thrown, we dont want to catch it.
+        p = self.get_nonlinear_path(
+            position, euler, quaternion, ignore_collisions, trials, max_configs,
+            trials_per_goal, algorithm, relative_to=relative_to)
+        return p
+
+    def get_tip(self) -> Dummy:
+        """Gets the tip of the arm.
+
+        Each arm is required to have a tip for path planning.
+
+        :return: The tip of the arm.
+        """
+        return self._ik_tip
+
+    def get_jacobian(self):
+        """Calculates the Jacobian.
+
+        :return: the row-major Jacobian matix.
+        """
+        self._ik_target.set_matrix(self._ik_tip.get_matrix())
+        sim.simCheckIkGroup(self._ik_group,
+                            [j.get_handle() for j in self.joints])
+        jacobian, (rows, cols) = sim.simGetIkGroupMatrix(self._ik_group, 0)
+        jacobian = np.array(jacobian).reshape((rows, cols), order='F')
+        return jacobian
