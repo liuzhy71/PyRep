@@ -1,8 +1,4 @@
-import numpy as np
-import math
-from PyRep.pyrep.backend import sim
-from PyRep.pyrep.backend.utils import trans, rot_around_axis, SC, KL, LP, quadprog
-from parallel_manipulator import ParallelManipulator
+from PyRep.pyrep.robots.parallel_manipulators.parallel_manipulator import ParallelManipulator
 from PyRep.pyrep.objects.force_sensor import ForceSensor
 
 

@@ -50,7 +50,7 @@ class PM4PPPSPegInHoleEnv(object):
         return self._get_state()
 
     def step(self, action):
-        self.agent.set
+        # self.agent.set
         self.agent.set_joint_target_velocities(action)  # Execute action on arm
         self.pr.step()  # Step the physics simulation
         ax, ay, az = self.agent_ee_tip.get_position()
@@ -72,3 +72,27 @@ class Agent(object):
     def learn(self, replay_buffer):
         del replay_buffer
         pass
+
+
+pr = PyRep()
+pr.launch(SCENE_FILE, headless=False)
+pr.start()
+robot = PM_4PPPS()
+waypoint = Dummy('waypoint')
+print('Planning path to the stationary cabin ...')
+path = robot.get_path(position=waypoint.get_position(),
+                      quaternion=waypoint.get_quaternion())
+path.visualize()  # Let's see what the path looks like
+pr.step()
+print('Executing plan ...')
+done = False
+while not done:
+    done = path.step()
+    pr.step()
+path.clear_visualization()
+
+print('Done ...')
+input('Press enter to finish ...')
+pr.stop()
+pr.shutdown()
+

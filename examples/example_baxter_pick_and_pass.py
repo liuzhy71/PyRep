@@ -11,7 +11,6 @@ from PyRep.pyrep.robots.arms.baxter import BaxterLeft, BaxterRight
 from PyRep.pyrep.robots.end_effectors.baxter_gripper import BaxterGripper
 from PyRep.pyrep.objects.dummy import Dummy
 from PyRep.pyrep.objects.shape import Shape
-import cffi
 
 SCENE_FILE = join(dirname(abspath(__file__)), 'scene_baxter_pick_and_pass.ttt')
 pr = PyRep()

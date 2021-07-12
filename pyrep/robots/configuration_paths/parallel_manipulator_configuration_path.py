@@ -123,12 +123,23 @@ class ParallelManipulatorConfigurationPath(ConfigurationPath):
                 [max_vel * vel_correction, max_accel, max_jerk],
                 [1], target_pos_vel)
             state = 0
+            last_idx = 0
             while state == 0:
                 state, pos_vel_accel = sim.simRMLStep(rml_handle, dt, 1)
                 if state >= 0:
+                    # 1: final state reached
+                    # 0: final state not yet reached
+                    # -100: RML_ERROR_INVALID_INPUT_VALUES
+                    # -101: RML_ERROR_EXECUTION_TIME_CALCULATION
+                    # -102: RML_ERROR_SYNCHRONIZATION
+                    # -103: RML_ERROR_NUMBER_OF_DOFS
+                    # -104: RML_ERROR_NO_PHASE_SYNCHRONIZATION
+                    # -105: RML_ERROR_NULL_POINTER
+                    # -106: RML_ERROR_EXECUTION_TIME_TOO_BIG
                     pos = pos_vel_accel[0]
-                    for i in range(len(self.path_lengths)-1):
+                    for i in range(last_idx, len(self.path_lengths)-1):
                         if self.path_lengths[i] <= pos <= self.path_lengths[i + 1]:
+                            last_idx = i
                             t = (pos - self.path_lengths[i]) / (self.path_lengths[i + 1] - self.path_lengths[i])
                             # For each joint
                             offset = len(self._PM.joints) * i
@@ -163,8 +174,9 @@ class ParallelManipulatorConfigurationPath(ConfigurationPath):
         state, posVelAccel = sim.simRMLStep(self._rml_handle, dt, 1)
         if state >= 0:
             pos = posVelAccel[0]
-            for i in range(len(self.path_lengths) - 1):
+            for i in range(self.last_idx, len(self.path_lengths) - 1):
                 if self.path_lengths[i] <= pos <= self.path_lengths[i + 1]:
+                    self.last_idx = i
                     t = (pos - self.path_lengths[i]) / (self.path_lengths[i + 1] - self.path_lengths[i])
                     # For each joint
                     offset = len(self._PM.joints) * i
@@ -179,6 +191,7 @@ class ParallelManipulatorConfigurationPath(ConfigurationPath):
                     break
         if state == 1:
             sim.simRMLRemove(self._rml_handle)
+            self.last_idx = 0
         return state
 
     def _get_path_point_lengths(self) -> List[float]:

@@ -301,7 +301,8 @@ class Arm(RobotComponent):
     def get_linear_path(self, position: Union[List[float], np.ndarray],
                         euler: Union[List[float], np.ndarray] = None,
                         quaternion: Union[List[float], np.ndarray] = None,
-                        steps=50, ignore_collisions=False,
+                        steps=50,
+                        ignore_collisions=False,
                         relative_to: Object = None) -> ArmConfigurationPath:
         """Gets a linear configuration path given a target pose.  生成机器人末端点到点之间的直线轨迹
 
