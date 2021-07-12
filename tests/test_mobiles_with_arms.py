@@ -1,10 +1,10 @@
 import unittest
-from tests.core import TestCore
-from pyrep import PyRep
+from PyRep.tests.core import TestCore
+from PyRep.pyrep import PyRep
 from os import path
 
-from pyrep.robots.mobiles.locobot import LoCoBot
-from pyrep.robots.arms.locobot_arm import LoCoBotArm
+from PyRep.pyrep.robots.mobiles.locobot import LoCoBot
+from PyRep.pyrep.robots.arms.locobot_arm import LoCoBotArm
 
 ASSET_DIR = path.join(path.dirname(path.abspath(__file__)), 'assets')
 

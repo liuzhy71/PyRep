@@ -1,9 +1,9 @@
 import warnings
 
-from pyrep.backend import sim
-from pyrep.errors import *
-from pyrep.const import ObjectType
-from pyrep.errors import WrongObjectTypeError
+from PyRep.pyrep.backend import sim
+from PyRep.pyrep.errors import *
+from PyRep.pyrep.const import ObjectType
+from PyRep.pyrep.errors import WrongObjectTypeError
 from typing import Any, Dict, List, Tuple, Union
 import numpy as np
 

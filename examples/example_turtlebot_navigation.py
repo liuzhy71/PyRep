@@ -4,10 +4,10 @@ This script contains examples of:
     - Non-linear mobile paths to reach a target with collision avoidance
 """
 from os.path import dirname, join, abspath
-from pyrep import PyRep
-from pyrep.robots.mobiles.turtlebot import TurtleBot
-from pyrep.objects.shape import Shape
-from pyrep.const import PrimitiveShape
+from PyRep.pyrep import PyRep
+from PyRep.pyrep.robots.mobiles.turtlebot import TurtleBot
+from PyRep.pyrep.objects.shape import Shape
+from PyRep.pyrep.const import PrimitiveShape
 import numpy as np
 
 LOOPS = 4

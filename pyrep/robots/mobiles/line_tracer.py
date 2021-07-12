@@ -1,4 +1,4 @@
-from pyrep.robots.mobiles.mobile_base import MobileBase
+from PyRep.pyrep.robots.mobiles.mobile_base import MobileBase
 
 
 class LineTracer(MobileBase):

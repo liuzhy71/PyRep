@@ -1,14 +1,14 @@
 import unittest
 
-from pyrep.robots.end_effectors.robotiq85_gripper import Robotiq85Gripper
-from tests.core import TestCore
-from pyrep import PyRep
+from PyRep.pyrep.robots.end_effectors.robotiq85_gripper import Robotiq85Gripper
+from PyRep.tests.core import TestCore
+from PyRep.pyrep import PyRep
 from os import path
 
-from pyrep.robots.end_effectors.panda_gripper import PandaGripper
-from pyrep.robots.end_effectors.mico_gripper import MicoGripper
-from pyrep.robots.end_effectors.jaco_gripper import JacoGripper
-from pyrep.robots.end_effectors.baxter_gripper import BaxterGripper
+from PyRep.pyrep.robots.end_effectors.panda_gripper import PandaGripper
+from PyRep.pyrep.robots.end_effectors.mico_gripper import MicoGripper
+from PyRep.pyrep.robots.end_effectors.jaco_gripper import JacoGripper
+from PyRep.pyrep.robots.end_effectors.baxter_gripper import BaxterGripper
 
 ASSET_DIR = path.join(path.dirname(path.abspath(__file__)), 'assets')
 

@@ -1,6 +1,6 @@
 import unittest
-from tests.core import TestCore
-from pyrep.objects.force_sensor import ForceSensor
+from PyRep.tests.core import TestCore
+from PyRep.pyrep.objects.force_sensor import ForceSensor
 
 
 class TestForceSensors(TestCore):

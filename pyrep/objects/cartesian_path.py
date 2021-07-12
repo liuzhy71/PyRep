@@ -1,7 +1,7 @@
 from typing import Tuple, List
-from pyrep.backend import sim
-from pyrep.objects.object import Object, object_type_to_class
-from pyrep.const import ObjectType
+from PyRep.pyrep.backend import sim
+from PyRep.pyrep.objects.object import Object, object_type_to_class
+from PyRep.pyrep.const import ObjectType
 
 
 class CartesianPath(Object):

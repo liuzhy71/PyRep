@@ -1,4 +1,4 @@
-from pyrep.robots.configuration_paths.mobile_configuration_path import (
+from PyRep.pyrep.robots.configuration_paths.mobile_configuration_path import (
     MobileConfigurationPath)
 from math import sqrt
 

@@ -1,23 +1,23 @@
 import unittest
-from tests.core import TestCore
-from pyrep import PyRep
-from pyrep.objects.cartesian_path import CartesianPath
-from pyrep.objects.dummy import Dummy
+from PyRep.tests.core import TestCore
+from PyRep.pyrep import PyRep
+from PyRep.pyrep.objects.cartesian_path import CartesianPath
+from PyRep.pyrep.objects.dummy import Dummy
 import numpy as np
 from os import path
-from pyrep.errors import ConfigurationPathError
+from PyRep.pyrep.errors import ConfigurationPathError
 
-from pyrep.robots.arms.panda import Panda
-from pyrep.robots.arms.mico import Mico
-from pyrep.robots.arms.jaco import Jaco
-from pyrep.robots.arms.sawyer import Sawyer
-from pyrep.robots.arms.baxter import BaxterLeft, BaxterRight
-from pyrep.robots.arms.lbr_iiwa_7_r800 import LBRIwaa7R800
-from pyrep.robots.arms.lbr_iiwa_14_r820 import LBRIwaa14R820
-from pyrep.robots.arms.ur3 import UR3
-from pyrep.robots.arms.ur5 import UR5
-from pyrep.robots.arms.ur10 import UR10
-from pyrep.robots.arms.dobot import Dobot
+from PyRep.pyrep.robots.arms.panda import Panda
+from PyRep.pyrep.robots.arms.mico import Mico
+from PyRep.pyrep.robots.arms.jaco import Jaco
+from PyRep.pyrep.robots.arms.sawyer import Sawyer
+from PyRep.pyrep.robots.arms.baxter import BaxterLeft, BaxterRight
+from PyRep.pyrep.robots.arms.lbr_iiwa_7_r800 import LBRIwaa7R800
+from PyRep.pyrep.robots.arms.lbr_iiwa_14_r820 import LBRIwaa14R820
+from PyRep.pyrep.robots.arms.ur3 import UR3
+from PyRep.pyrep.robots.arms.ur5 import UR5
+from PyRep.pyrep.robots.arms.ur10 import UR10
+from PyRep.pyrep.robots.arms.dobot import Dobot
 
 ASSET_DIR = path.join(path.dirname(path.abspath(__file__)), 'assets')
 

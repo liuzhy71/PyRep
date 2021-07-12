@@ -5,8 +5,8 @@ This script contains examples of:
     - Joint movement by setting joint target positions.
 """
 from os.path import dirname, join, abspath
-from pyrep import PyRep
-from pyrep.robots.arms.panda import Panda
+from PyRep.pyrep import PyRep
+from PyRep.pyrep.robots.arms.panda import Panda
 
 SCENE_FILE = join(dirname(abspath(__file__)), 'scene_panda_reach_target.ttt')
 DELTA = 0.01

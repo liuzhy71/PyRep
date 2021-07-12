@@ -1,6 +1,6 @@
 import unittest
-from tests.core import TestCore
-from pyrep.objects.cartesian_path import CartesianPath
+from PyRep.tests.core import TestCore
+from PyRep.pyrep.objects.cartesian_path import CartesianPath
 
 
 class TestCartesianPaths(TestCore):

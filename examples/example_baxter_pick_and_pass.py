@@ -6,11 +6,12 @@ This script contains examples of:
     - Using a gripper.
 """
 from os.path import dirname, join, abspath
-from pyrep import PyRep
-from pyrep.robots.arms.baxter import BaxterLeft, BaxterRight
-from pyrep.robots.end_effectors.baxter_gripper import BaxterGripper
-from pyrep.objects.dummy import Dummy
-from pyrep.objects.shape import Shape
+from PyRep.pyrep.pyrep import PyRep
+from PyRep.pyrep.robots.arms.baxter import BaxterLeft, BaxterRight
+from PyRep.pyrep.robots.end_effectors.baxter_gripper import BaxterGripper
+from PyRep.pyrep.objects.dummy import Dummy
+from PyRep.pyrep.objects.shape import Shape
+import cffi
 
 SCENE_FILE = join(dirname(abspath(__file__)), 'scene_baxter_pick_and_pass.ttt')
 pr = PyRep()

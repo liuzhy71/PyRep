@@ -1,8 +1,8 @@
 from typing import List, Union
-from pyrep.objects.object import Object
-from pyrep.objects.proximity_sensor import ProximitySensor
-from pyrep.objects.force_sensor import ForceSensor
-from pyrep.robots.robot_component import RobotComponent
+from PyRep.pyrep.objects.object import Object
+from PyRep.pyrep.objects.proximity_sensor import ProximitySensor
+from PyRep.pyrep.objects.force_sensor import ForceSensor
+from PyRep.pyrep.robots.robot_component import RobotComponent
 import numpy as np
 
 POSITION_ERROR = 0.001

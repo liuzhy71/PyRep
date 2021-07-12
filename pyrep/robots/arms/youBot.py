@@ -1,4 +1,4 @@
-from pyrep.robots.arms.arm import Arm
+from PyRep.pyrep.robots.arms.arm import Arm
 
 
 class youBot(Arm):

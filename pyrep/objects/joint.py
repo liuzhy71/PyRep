@@ -1,8 +1,8 @@
 from typing import Tuple, List, Union
-from pyrep.backend import sim, utils
-from pyrep.const import JointType, JointMode
-from pyrep.objects.object import Object, object_type_to_class
-from pyrep.const import ObjectType
+from PyRep.pyrep.backend import sim, utils
+from PyRep.pyrep.const import JointType, JointMode
+from PyRep.pyrep.objects.object import Object, object_type_to_class
+from PyRep.pyrep.const import ObjectType
 
 
 class Joint(Object):

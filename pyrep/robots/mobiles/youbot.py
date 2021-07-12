@@ -1,4 +1,4 @@
-from pyrep.robots.mobiles.holonomic_base import HolonomicBase
+from PyRep.pyrep.robots.mobiles.holonomic_base import HolonomicBase
 
 
 class YouBot(HolonomicBase):

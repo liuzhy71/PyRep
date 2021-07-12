@@ -1,4 +1,4 @@
-from pyrep.robots.end_effectors.gripper import Gripper
+from PyRep.pyrep.robots.end_effectors.gripper import Gripper
 
 
 class BaxterGripper(Gripper):

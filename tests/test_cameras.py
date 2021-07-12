@@ -1,9 +1,9 @@
 import unittest
-from tests.core import TestCore
-from pyrep.const import ObjectType
-from pyrep.objects.camera import Camera
-from pyrep.objects.dummy import Dummy
-from pyrep.objects.object import Object
+from PyRep.tests.core import TestCore
+from PyRep.pyrep.const import ObjectType
+from PyRep.pyrep.objects.camera import Camera
+from PyRep.pyrep.objects.dummy import Dummy
+from PyRep.pyrep.objects.object import Object
 import numpy as np
 
 

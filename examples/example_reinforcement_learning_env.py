@@ -8,9 +8,9 @@ This script contains examples of:
     - Setting joint properties (control loop disabled, motor locked at 0 vel)
 """
 from os.path import dirname, join, abspath
-from pyrep import PyRep
-from pyrep.robots.arms.panda import Panda
-from pyrep.objects.shape import Shape
+from PyRep.pyrep import PyRep
+from PyRep.pyrep.robots.arms.panda import Panda
+from PyRep.pyrep.objects.shape import Shape
 import numpy as np
 
 SCENE_FILE = join(dirname(abspath(__file__)),

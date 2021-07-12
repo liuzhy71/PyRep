@@ -1,7 +1,7 @@
 import unittest
-from tests.core import TestCore
-from pyrep.objects.vision_sensor import VisionSensor
-from pyrep.const import RenderMode, PerspectiveMode
+from PyRep.tests.core import TestCore
+from PyRep.pyrep.objects.vision_sensor import VisionSensor
+from PyRep.pyrep.const import RenderMode, PerspectiveMode
 
 
 class TestVisionSensors(TestCore):

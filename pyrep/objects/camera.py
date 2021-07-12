@@ -1,6 +1,6 @@
 from typing import Union
-from pyrep.objects.object import Object, object_type_to_class
-from pyrep.const import ObjectType
+from PyRep.pyrep.objects.object import Object, object_type_to_class
+from PyRep.pyrep.const import ObjectType
 
 
 class Camera(Object):

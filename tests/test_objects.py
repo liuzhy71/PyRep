@@ -1,12 +1,12 @@
 import unittest
 
-from pyrep.const import ObjectType
+from PyRep.pyrep.const import ObjectType
 
-from tests.core import TestCore
-from pyrep.objects.shape import Shape
-from pyrep.objects.dummy import Dummy
-from pyrep.objects.object import Object
-from pyrep.objects.vision_sensor import VisionSensor
+from PyRep.tests.core import TestCore
+from PyRep.pyrep.objects.shape import Shape
+from PyRep.pyrep.objects.dummy import Dummy
+from PyRep.pyrep.objects.object import Object
+from PyRep.pyrep.objects.vision_sensor import VisionSensor
 import numpy as np
 
 

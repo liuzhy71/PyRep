@@ -1,12 +1,12 @@
-from pyrep.robots.mobiles.mobile_base import MobileBase
-from pyrep.robots.configuration_paths.holonomic_configuration_path import (
+from PyRep.pyrep.robots.mobiles.mobile_base import MobileBase
+from PyRep.pyrep.robots.configuration_paths.holonomic_configuration_path import (
     HolonomicConfigurationPath)
-from pyrep.backend import utils
-from pyrep.const import PYREP_SCRIPT_TYPE
-from pyrep.const import ConfigurationPathAlgorithms as Algos
-from pyrep.errors import ConfigurationPathError
+from PyRep.pyrep.backend import utils
+from PyRep.pyrep.const import PYREP_SCRIPT_TYPE
+from PyRep.pyrep.const import ConfigurationPathAlgorithms as Algos
+from PyRep.pyrep.errors import ConfigurationPathError
 from typing import List
-from pyrep.objects.joint import Joint
+from PyRep.pyrep.objects.joint import Joint
 from math import pi, sqrt
 
 

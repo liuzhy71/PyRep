@@ -1,10 +1,10 @@
 from typing import List
 
-from pyrep.backend import sim
-from pyrep.const import ObjectType
-from pyrep.objects.force_sensor import ForceSensor
-from pyrep.objects.object import Object
-from pyrep.objects.shape import Shape
+from PyRep.pyrep.backend import sim
+from PyRep.pyrep.const import ObjectType
+from PyRep.pyrep.objects.force_sensor import ForceSensor
+from PyRep.pyrep.objects.object import Object
+from PyRep.pyrep.objects.shape import Shape
 
 
 class Accelerometer(Object):

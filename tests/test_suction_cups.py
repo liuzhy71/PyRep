@@ -1,11 +1,11 @@
 import unittest
-from tests.core import TestCore
-from pyrep import PyRep
-from pyrep.objects.shape import Shape
+from PyRep.tests.core import TestCore
+from PyRep.pyrep import PyRep
+from PyRep.pyrep.objects.shape import Shape
 from os import path
 
-from pyrep.robots.end_effectors.dobot_suction_cup import DobotSuctionCup
-from pyrep.robots.end_effectors.baxter_suction_cup import BaxterSuctionCup
+from PyRep.pyrep.robots.end_effectors.dobot_suction_cup import DobotSuctionCup
+from PyRep.pyrep.robots.end_effectors.baxter_suction_cup import BaxterSuctionCup
 
 ASSET_DIR = path.join(path.dirname(path.abspath(__file__)), 'assets')
 

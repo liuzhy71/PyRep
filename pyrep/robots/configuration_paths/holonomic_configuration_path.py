@@ -1,7 +1,7 @@
-from pyrep.backend import sim, utils
-from pyrep.robots.configuration_paths.mobile_configuration_path import (
+from PyRep.pyrep.backend import sim, utils
+from PyRep.pyrep.robots.configuration_paths.mobile_configuration_path import (
     MobileConfigurationPath)
-from pyrep.const import PYREP_SCRIPT_TYPE
+from PyRep.pyrep.const import PYREP_SCRIPT_TYPE
 from math import sqrt
 
 

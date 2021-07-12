@@ -1,7 +1,7 @@
 from typing import Tuple, List
-from pyrep.backend import sim
-from pyrep.objects.object import Object, object_type_to_class
-from pyrep.const import ObjectType
+from PyRep.pyrep.backend import sim
+from PyRep.pyrep.objects.object import Object, object_type_to_class
+from PyRep.pyrep.const import ObjectType
 
 
 class ForceSensor(Object):
@@ -11,7 +11,7 @@ class ForceSensor(Object):
     def _get_requested_type(self) -> ObjectType:
         return ObjectType.FORCE_SENSOR
 
-    @classmethod
+    @classmethod   # 类方法，不需要实例化就可以调用，第一个参数是类的cls参数，可以用来调用类的属性，类的方法，实例化对象
     def create(cls, sensor_size=0.01) -> 'ForceSensor':
         options = 0  # force and torque threshold are disabled
         intParams = [0, 0, 0, 0, 0]

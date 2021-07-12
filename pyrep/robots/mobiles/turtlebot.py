@@ -1,4 +1,4 @@
-from pyrep.robots.mobiles.nonholonomic_base import NonHolonomicBase
+from PyRep.pyrep.robots.mobiles.nonholonomic_base import NonHolonomicBase
 
 
 class TurtleBot(NonHolonomicBase):

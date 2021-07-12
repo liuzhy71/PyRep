@@ -1,11 +1,11 @@
 import unittest
 
-from pyrep.const import ObjectType
+from PyRep.pyrep.const import ObjectType
 
-from tests.core import TestCore
-from pyrep.objects.object import Object
-from pyrep.objects.shape import Shape
-from pyrep.objects.octree import Octree
+from PyRep.tests.core import TestCore
+from PyRep.pyrep.objects.object import Object
+from PyRep.pyrep.objects.shape import Shape
+from PyRep.pyrep.objects.octree import Octree
 
 class TestOctrees(TestCore):
 

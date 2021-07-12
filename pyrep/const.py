@@ -1,4 +1,4 @@
-from pyrep.backend import sim
+from PyRep.pyrep.backend import sim
 from enum import Enum
 
 

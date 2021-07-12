@@ -1,6 +1,6 @@
 import unittest
-from tests.core import TestCore
-from pyrep.objects.dummy import Dummy
+from PyRep.tests.core import TestCore
+from PyRep.pyrep.objects.dummy import Dummy
 
 
 class TestDummies(TestCore):

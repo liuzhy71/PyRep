@@ -1,12 +1,12 @@
 import numpy as np
 from contextlib import contextmanager
-from pyrep.backend import sim, utils
-from pyrep.const import Verbosity
-from pyrep.objects.object import Object
-from pyrep.objects.shape import Shape
-from pyrep.textures.texture import Texture
-from pyrep.errors import PyRepError
-from pyrep.backend import sim
+from PyRep.pyrep.backend import sim, utils
+from PyRep.pyrep.const import Verbosity
+from PyRep.pyrep.objects.object import Object
+from PyRep.pyrep.objects.shape import Shape
+from PyRep.pyrep.textures.texture import Texture
+from PyRep.pyrep.errors import PyRepError
+from PyRep.pyrep.backend import sim
 import os
 import sys
 import time

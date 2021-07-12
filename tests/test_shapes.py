@@ -1,8 +1,8 @@
 import unittest
-from tests.core import TestCore
-from pyrep.objects.shape import Shape
-from pyrep.const import PrimitiveShape, TextureMappingMode
-from tests.core import ASSET_DIR
+from PyRep.tests.core import TestCore
+from PyRep.pyrep.objects.shape import Shape
+from PyRep.pyrep.const import PrimitiveShape, TextureMappingMode
+from PyRep.tests.core import ASSET_DIR
 from os import path
 import numpy as np
 

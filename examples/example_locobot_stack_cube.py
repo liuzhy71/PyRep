@@ -5,12 +5,12 @@ This script contains examples of:
     - How to use the combination of a mobile base, manipulator, and gripper.
 """
 from os.path import dirname, join, abspath
-from pyrep import PyRep
-from pyrep.robots.mobiles.locobot import LoCoBot
-from pyrep.robots.arms.locobot_arm import LoCoBotArm
-from pyrep.robots.end_effectors.locobot_gripper import LoCoBotGripper
-from pyrep.objects.shape import Shape
-from pyrep.objects.dummy import Dummy
+from PyRep.pyrep import PyRep
+from PyRep.pyrep.robots.mobiles.locobot import LoCoBot
+from PyRep.pyrep.robots.arms.locobot_arm import LoCoBotArm
+from PyRep.pyrep.robots.end_effectors.locobot_gripper import LoCoBotGripper
+from PyRep.pyrep.objects.shape import Shape
+from PyRep.pyrep.objects.dummy import Dummy
 
 SCENE_FILE = join(dirname(abspath(__file__)), 'scene_locobot_stack_cube.ttt')
 pr = PyRep()

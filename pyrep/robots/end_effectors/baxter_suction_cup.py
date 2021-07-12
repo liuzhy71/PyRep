@@ -1,4 +1,4 @@
-from pyrep.robots.end_effectors.suction_cup import SuctionCup
+from PyRep.pyrep.robots.end_effectors.suction_cup import SuctionCup
 
 
 class BaxterSuctionCup(SuctionCup):

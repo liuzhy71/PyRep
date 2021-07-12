@@ -1,9 +1,9 @@
 import unittest
-from pyrep.errors import PyRepError
-from tests.core import TestCore
-from pyrep.misc.distance import Distance
-from pyrep.misc.signals import IntegerSignal, FloatSignal
-from pyrep.misc.signals import DoubleSignal, StringSignal
+from PyRep.pyrep.errors import PyRepError
+from PyRep.tests.core import TestCore
+from PyRep.pyrep.misc.distance import Distance
+from PyRep.pyrep.misc.signals import IntegerSignal, FloatSignal
+from PyRep.pyrep.misc.signals import DoubleSignal, StringSignal
 
 
 # TODO: These tests will be re-enabled once bug has been fixed in CoppeliaSim.

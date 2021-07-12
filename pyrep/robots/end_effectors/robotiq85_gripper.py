@@ -1,7 +1,7 @@
 from typing import List
 
-from pyrep.objects import Joint
-from pyrep.robots.end_effectors.gripper import Gripper, POSITION_ERROR
+from PyRep.pyrep.objects import Joint
+from PyRep.pyrep.robots.end_effectors.gripper import Gripper, POSITION_ERROR
 import numpy as np
 
 POSITION_ERROR = 0.00001

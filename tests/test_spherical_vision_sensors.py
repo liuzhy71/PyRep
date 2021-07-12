@@ -1,7 +1,7 @@
 import unittest
-from tests.core import TestCore
-from pyrep.sensors.spherical_vision_sensor import SphericalVisionSensor
-from pyrep.const import RenderMode, PerspectiveMode
+from PyRep.tests.core import TestCore
+from PyRep.pyrep.sensors.spherical_vision_sensor import SphericalVisionSensor
+from PyRep.pyrep.const import RenderMode, PerspectiveMode
 
 
 class TestSphericalVisionSensors(TestCore):

@@ -1,7 +1,7 @@
 import unittest
-from tests.core import TestCore
-from pyrep.objects.proximity_sensor import ProximitySensor
-from pyrep.objects.shape import Shape
+from PyRep.tests.core import TestCore
+from PyRep.pyrep.objects.proximity_sensor import ProximitySensor
+from PyRep.pyrep.objects.shape import Shape
 
 
 class TestProximitySensors(TestCore):

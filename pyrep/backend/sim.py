@@ -1,4 +1,5 @@
 from .simConst import *
+import cffi
 from ._sim_cffi import ffi, lib
 import numpy as np
 import collections
@@ -899,6 +900,29 @@ def simGetJointType(objectHandle):
 
 def simRMLPos(dofs, smallestTimeStep, flags, currentPosVelAccel,
               maxVelAccelJerk, selection, targetPosVel):
+    """
+    Executes a call to the Reflexxes Motion Library type II or IV. The Reflexxes Motion Library provides
+    instantaneous trajectory generation capabilities for motion control systems. This function prepares a
+    position-based trajectory generation object, that can then be calculated with sim.rmlStep. When this object is
+    not needed anymore, remove it with sim.rmlRemove. See also sim.rmlVel, sim.moveToPose and sim.moveToConfig.
+    :param dofs: the number of degrees of freedom (N). For operation space planning, a suggestion would be 3 or 6; for
+     joint space planning, this should be 1
+    :param smallestTimeStep: the smallest expected cycle time. Use a value of 0.0001 (0.1ms).
+    :param flags: -1 for default flags. use bit operation for the flags
+            group1: simrml_phase_sync_if_possible = 0
+                    simrml_only_time_sync = 1
+                    simrml_only_phase_sync = 2
+                    simrml_no_sync = 3
+            group2: simrml_keep_target_vel = 0
+                    simrml_recompute_trajectory = 4
+            group3: simrml_disable_extremum_motion_states_calc = 8
+                    simrml_keep_current_vel_if_fallback_strategy = 16
+    :param currentPosVelAccel:
+    :param maxVelAccelJerk:
+    :param selection:
+    :param targetPosVel:
+    :return:
+    """
     smallestTimeStep = ffi.cast('double', smallestTimeStep)
     handle = lib.simRMLPos(dofs, smallestTimeStep, flags, currentPosVelAccel,
                            maxVelAccelJerk, selection, targetPosVel, ffi.NULL)
@@ -915,6 +939,13 @@ def simRMLVel(dofs, smallestTimeStep, flags, currentPosVelAccel, maxAccelJerk,
 
 
 def simRMLStep(handle, timeStep, dofs):
+    """
+    Executes a call to the Reflexxes Motion Library type II or IV. The Reflexxes Motion Library provides
+    instantaneous trajectory generation capabilities for motion control systems. This function steps forward a
+    trajectory generation algorithm previously prepared via sim.rmlPos or sim.rmlVel. :param handle: :param timeStep:
+    :param dofs:
+    :return:
+    """
     newPosVelAccel = ffi.new('double[%d]' % (dofs * 3))
     # timeStep = ffi.cast('double', timeStep)
     state = lib.simRMLStep(handle, timeStep, newPosVelAccel, ffi.NULL, ffi.NULL)

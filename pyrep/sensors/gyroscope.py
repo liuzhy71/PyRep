@@ -1,6 +1,6 @@
-from pyrep.backend import sim
-from pyrep.const import ObjectType
-from pyrep.objects.object import Object
+from PyRep.pyrep.backend import sim
+from PyRep.pyrep.const import ObjectType
+from PyRep.pyrep.objects.object import Object
 
 
 class Gyroscope(Object):

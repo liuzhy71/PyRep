@@ -1,7 +1,7 @@
 import unittest
-from tests.core import TestCore
-from pyrep.const import JointType
-from pyrep.robots.arms.panda import Panda
+from PyRep.tests.core import TestCore
+from PyRep.pyrep.const import JointType
+from PyRep.pyrep.robots.arms.panda import Panda
 import numpy as np
 
 

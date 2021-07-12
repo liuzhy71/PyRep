@@ -5,11 +5,11 @@ This script contains examples of:
     - Scene manipulation (creating an object and moving it).
 """
 from os.path import dirname, join, abspath
-from pyrep import PyRep
-from pyrep.robots.arms.panda import Panda
-from pyrep.objects.shape import Shape
-from pyrep.const import PrimitiveShape
-from pyrep.errors import ConfigurationPathError
+from PyRep.pyrep import PyRep
+from PyRep.pyrep.robots.arms.panda import Panda
+from PyRep.pyrep.objects.shape import Shape
+from PyRep.pyrep.const import PrimitiveShape
+from PyRep.pyrep.errors import ConfigurationPathError
 import numpy as np
 import math
 

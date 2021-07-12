@@ -1,10 +1,10 @@
 import numpy as np
 from typing import List, Sequence
 
-from pyrep.backend import sim, utils
-from pyrep.objects.object import Object
-from pyrep.objects.vision_sensor import VisionSensor
-from pyrep.const import PYREP_SCRIPT_TYPE, RenderMode, ObjectType
+from PyRep.pyrep.backend import sim, utils
+from PyRep.pyrep.objects.object import Object
+from PyRep.pyrep.objects.vision_sensor import VisionSensor
+from PyRep.pyrep.const import PYREP_SCRIPT_TYPE, RenderMode, ObjectType
 
 MIN_DIVISOR = 1e-12
 

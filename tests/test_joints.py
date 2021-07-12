@@ -1,7 +1,7 @@
 import unittest
-from tests.core import TestCore
-from pyrep.objects.joint import Joint
-from pyrep.const import JointType, JointMode
+from PyRep.tests.core import TestCore
+from PyRep.pyrep.objects.joint import Joint
+from PyRep.pyrep.const import JointType, JointMode
 
 
 class TestJoints(TestCore):

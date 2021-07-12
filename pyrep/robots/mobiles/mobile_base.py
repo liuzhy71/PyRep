@@ -1,10 +1,10 @@
-from pyrep.backend import sim, utils
-from pyrep.objects.dummy import Dummy
-from pyrep.objects.shape import Shape
-from pyrep.robots.robot_component import RobotComponent
-from pyrep.const import ConfigurationPathAlgorithms as Algos
-from pyrep.errors import ConfigurationPathError
-from pyrep.const import PYREP_SCRIPT_TYPE
+from PyRep.pyrep.backend import sim, utils
+from PyRep.pyrep.objects.dummy import Dummy
+from PyRep.pyrep.objects.shape import Shape
+from PyRep.pyrep.robots.robot_component import RobotComponent
+from PyRep.pyrep.const import ConfigurationPathAlgorithms as Algos
+from PyRep.pyrep.errors import ConfigurationPathError
+from PyRep.pyrep.const import PYREP_SCRIPT_TYPE
 from typing import List, Union
 from math import sqrt
 import numpy as np

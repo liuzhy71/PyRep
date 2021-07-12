@@ -1,16 +1,16 @@
 import unittest
 import warnings
 import tempfile
-from tests.core import TestCore
-from tests.core import ASSET_DIR
-from pyrep.objects.object import Object
-from pyrep.objects.shape import Shape
-from pyrep.objects.dummy import Dummy
-from pyrep.objects.joint import Joint
-from pyrep.objects.proximity_sensor import ProximitySensor
-from pyrep.objects.force_sensor import ForceSensor
-from pyrep.objects.cartesian_path import CartesianPath
-from pyrep.errors import WrongObjectTypeError
+from PyRep.tests.core import TestCore
+from PyRep.tests.core import ASSET_DIR
+from PyRep.pyrep.objects.object import Object
+from PyRep.pyrep.objects.shape import Shape
+from PyRep.pyrep.objects.dummy import Dummy
+from PyRep.pyrep.objects.joint import Joint
+from PyRep.pyrep.objects.proximity_sensor import ProximitySensor
+from PyRep.pyrep.objects.force_sensor import ForceSensor
+from PyRep.pyrep.objects.cartesian_path import CartesianPath
+from PyRep.pyrep.errors import WrongObjectTypeError
 import os
 from os import path
 import numpy as np

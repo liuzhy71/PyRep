@@ -4,11 +4,11 @@ from math import sin
 from math import sqrt
 from typing import List
 
-from pyrep.const import ConfigurationPathAlgorithms as Algos
-from pyrep.errors import ConfigurationPathError
-from pyrep.robots.configuration_paths.nonholonomic_configuration_path import (
+from PyRep.pyrep.const import ConfigurationPathAlgorithms as Algos
+from PyRep.pyrep.errors import ConfigurationPathError
+from PyRep.pyrep.robots.configuration_paths.nonholonomic_configuration_path import (
     NonHolonomicConfigurationPath)
-from pyrep.robots.mobiles.mobile_base import MobileBase
+from PyRep.pyrep.robots.mobiles.mobile_base import MobileBase
 
 
 class NonHolonomicBase(MobileBase):

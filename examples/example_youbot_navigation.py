@@ -4,10 +4,10 @@ This script contains examples of:
     - Linear mobile paths with an omnidirectional robot to reach a target.
 """
 from os.path import dirname, join, abspath
-from pyrep import PyRep
-from pyrep.robots.mobiles.youbot import YouBot
-from pyrep.objects.shape import Shape
-from pyrep.const import PrimitiveShape
+from PyRep.pyrep import PyRep
+from PyRep.pyrep.robots.mobiles.youbot import YouBot
+from PyRep.pyrep.objects.shape import Shape
+from PyRep.pyrep.const import PrimitiveShape
 import numpy as np
 
 LOOPS = 4

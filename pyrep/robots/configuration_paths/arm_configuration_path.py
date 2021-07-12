@@ -1,8 +1,14 @@
-from pyrep.backend import sim
-from pyrep.robots.configuration_paths.configuration_path import (
+from PyRep.pyrep.backend import sim
+from PyRep.pyrep.robots.configuration_paths.configuration_path import (
     ConfigurationPath)
 import numpy as np
 from typing import List, Optional, Union
+import logging, time
+
+logging.basicConfig(level=logging.DEBUG,
+                    format='[%(filename)s] [%(module)s] [%(funcName)s] [line:%(lineno)d] %(levelname)s %(message)s')
+
+logger = logging.getLogger(__name__)
 
 
 class ArmConfigurationPath(ConfigurationPath):
@@ -25,9 +31,10 @@ class ArmConfigurationPath(ConfigurationPath):
         self._drawing_handle = None
         self._path_done = False
         self._num_joints = arm.get_joint_count()
+        self.last_idx = 0
 
     def __len__(self):
-        return len(self._path_points) // self._num_joints
+        return len(self._path_points) // self._num_joints  # 向下取整
 
     def __getitem__(self, i):
         path_points = self._path_points.reshape(-1, self._num_joints)
@@ -110,23 +117,36 @@ class ArmConfigurationPath(ConfigurationPath):
         max_accel = self._arm.max_acceleration
         max_jerk = self._arm.max_jerk
         lengths = self._get_path_point_lengths()
-        target_pos_vel = [lengths[-1],0]
+        target_pos_vel = [lengths[-1], 0]
         previous_q = self._path_points[0:len(self._arm.joints)]
 
-        while True:
-            pos_vel_accel = [0, 0, 0]
-            rMax = 0
+        logger.debug('Start velocity correction debug timing.')
+        start_time = time.time()
+        while True:  # 这一大段代码就是做了一个速度矫正，然后效率低到爆炸，需要修改一下
+            pos_vel_accel = [0, 0, 0]  # 当前的位置速度加速度
+            rMax = 0  # 最大转速比，用来进行速度矫正需要的，正常情况不能大于1
             rml_handle = sim.simRMLPos(
                 1, 0.0001, -1, pos_vel_accel,
                 [max_vel * vel_correction, max_accel, max_jerk],
-                [1], target_pos_vel)
+                [1], target_pos_vel)  # dof=1, 关节空间规划?; smallest time step, [1] 是一个selection vector
             state = 0
+            last_idx = 0
             while state == 0:
                 state, pos_vel_accel = sim.simRMLStep(rml_handle, dt, 1)
                 if state >= 0:
+                    # 1: final state reached
+                    # 0: final state not yet reached
+                    # -100: RML_ERROR_INVALID_INPUT_VALUES
+                    # -101: RML_ERROR_EXECUTION_TIME_CALCULATION
+                    # -102: RML_ERROR_SYNCHRONIZATION
+                    # -103: RML_ERROR_NUMBER_OF_DOFS
+                    # -104: RML_ERROR_NO_PHASE_SYNCHRONIZATION
+                    # -105: RML_ERROR_NULL_POINTER
+                    # -106: RML_ERROR_EXECUTION_TIME_TOO_BIG
                     pos = pos_vel_accel[0]
-                    for i in range(len(lengths)-1):
+                    for i in range(last_idx, len(lengths) - 1):
                         if lengths[i] <= pos <= lengths[i + 1]:
+                            last_idx = i
                             t = (pos - lengths[i]) / (lengths[i + 1] - lengths[i])
                             # For each joint
                             offset = len(self._arm.joints) * i
@@ -149,10 +169,13 @@ class ArmConfigurationPath(ConfigurationPath):
                 vel_correction = vel_correction / rMax
             else:
                 break
+        end_time = time.time()
+        logger.debug('Use {} seconds for rMax calculation.'.format(end_time-start_time))
+
         pos_vel_accel = [0, 0, 0]
         rml_handle = sim.simRMLPos(
             1, 0.0001, -1, pos_vel_accel,
-            [max_vel*vel_correction, max_accel, max_jerk], [1], target_pos_vel)
+            [max_vel * vel_correction, max_accel, max_jerk], [1], target_pos_vel)
         return rml_handle
 
     def _step_motion(self) -> int:
@@ -161,8 +184,10 @@ class ArmConfigurationPath(ConfigurationPath):
         state, posVelAccel = sim.simRMLStep(self._rml_handle, dt, 1)
         if state >= 0:
             pos = posVelAccel[0]
-            for i in range(len(lengths) - 1):
+            # 这里也一样，使用了低效的遍历
+            for i in range(self.last_idx, len(lengths) - 1):
                 if lengths[i] <= pos <= lengths[i + 1]:
+                    self.last_idx = i
                     t = (pos - lengths[i]) / (lengths[i + 1] - lengths[i])
                     # For each joint
                     offset = len(self._arm.joints) * i
@@ -177,15 +202,19 @@ class ArmConfigurationPath(ConfigurationPath):
                     break
         if state == 1:
             sim.simRMLRemove(self._rml_handle)
+            self.last_idx = 0
         return state
 
     def _get_path_point_lengths(self) -> List[float]:
+        """
+        返回关节空间点到初始点的距离
+        :return:
+        """
         path_points = self._path_points
         prev_points = path_points[0:len(self._arm.joints)]
         dists = [0.]
         d = 0
-        for i in range(len(self._arm.joints), len(self._path_points),
-                       len(self._arm.joints)):
+        for i in range(len(self._arm.joints), len(self._path_points), len(self._arm.joints)):
             points = path_points[i:i + len(self._arm.joints)]
             d += np.sqrt(np.sum(np.square(prev_points - points)))
             dists.append(d)

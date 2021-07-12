@@ -4,9 +4,9 @@ This script contains examples of:
     - IK calculations.
 """
 from os.path import dirname, join, abspath
-from pyrep import PyRep
-from pyrep.errors import IKError
-from pyrep.robots.arms.panda import Panda
+from PyRep.pyrep.pyrep import PyRep
+from PyRep.pyrep.errors import IKError
+from PyRep.pyrep.robots.arms.panda import Panda
 
 SCENE_FILE = join(dirname(abspath(__file__)), 'scene_panda_reach_target.ttt')
 pr = PyRep()

@@ -1,6 +1,6 @@
 import unittest
-from tests.core import TestCore
-from pyrep.sensors.accelerometer import Accelerometer
+from PyRep.tests.core import TestCore
+from PyRep.pyrep.sensors.accelerometer import Accelerometer
 
 
 class TestAccelerometer(TestCore):

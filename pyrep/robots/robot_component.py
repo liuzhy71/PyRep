@@ -1,12 +1,12 @@
 from typing import List, Tuple
 
-from pyrep.objects.shape import Shape
+from PyRep.pyrep.objects.shape import Shape
 
-from pyrep.backend import sim, utils
-from pyrep.const import JointType
-from pyrep.objects.object import Object
-from pyrep.objects.joint import Joint
-from pyrep.const import ObjectType, JointMode
+from PyRep.pyrep.backend import sim, utils
+from PyRep.pyrep.const import JointType
+from PyRep.pyrep.objects.object import Object
+from PyRep.pyrep.objects.joint import Joint
+from PyRep.pyrep.const import ObjectType, JointMode
 
 
 class RobotComponent(Object):
@@ -214,7 +214,7 @@ class RobotComponent(Object):
         self._assert_len(cyclic)
         self._assert_len(intervals)
         [j.set_joint_interval(c, i)  # type: ignore
-         for j, c, i in zip( self.joints, cyclic, intervals)]
+         for j, c, i in zip(self.joints, cyclic, intervals)]
 
     def get_joint_upper_velocity_limits(self) -> List[float]:
         """Gets upper velocity limits of the joints.

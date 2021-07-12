@@ -1,13 +1,13 @@
 import unittest
-from tests.core import TestCore
-from pyrep import PyRep
-from pyrep.objects.dummy import Dummy
+from PyRep.tests.core import TestCore
+from PyRep.pyrep import PyRep
+from PyRep.pyrep.objects.dummy import Dummy
 import numpy as np
 from os import path
 
-from pyrep.robots.mobiles.youbot import YouBot
-from pyrep.robots.mobiles.turtlebot import TurtleBot
-from pyrep.robots.mobiles.line_tracer import LineTracer
+from PyRep.pyrep.robots.mobiles.youbot import YouBot
+from PyRep.pyrep.robots.mobiles.turtlebot import TurtleBot
+from PyRep.pyrep.robots.mobiles.line_tracer import LineTracer
 
 ASSET_DIR = path.join(path.dirname(path.abspath(__file__)), 'assets')
 

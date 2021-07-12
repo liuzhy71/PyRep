@@ -1,13 +1,13 @@
-from pyrep.backend import sim, utils
-from pyrep.objects import Object
-from pyrep.objects.dummy import Dummy
-from pyrep.robots.configuration_paths.arm_configuration_path import (
+from PyRep.pyrep.backend import sim, utils
+from PyRep.pyrep.objects import Object
+from PyRep.pyrep.objects.dummy import Dummy
+from PyRep.pyrep.robots.configuration_paths.arm_configuration_path import (
     ArmConfigurationPath)
-from pyrep.robots.robot_component import RobotComponent
-from pyrep.objects.cartesian_path import CartesianPath
-from pyrep.errors import ConfigurationError, ConfigurationPathError, IKError
-from pyrep.const import ConfigurationPathAlgorithms as Algos
-from pyrep.const import PYREP_SCRIPT_TYPE
+from PyRep.pyrep.robots.robot_component import RobotComponent
+from PyRep.pyrep.objects.cartesian_path import CartesianPath
+from PyRep.pyrep.errors import ConfigurationError, ConfigurationPathError, IKError
+from PyRep.pyrep.const import ConfigurationPathAlgorithms as Algos
+from PyRep.pyrep.const import PYREP_SCRIPT_TYPE
 from typing import List, Union
 import numpy as np
 import warnings
@@ -17,11 +17,15 @@ class Arm(RobotComponent):
     """Base class representing a robot arm with path planning support.
     """
 
-    def __init__(self, count: int, name: str, num_joints: int,
+    def __init__(self, count: int,
+                 name: str,
+                 num_joints: int,
                  base_name: str = None,
-                 max_velocity=1.0, max_acceleration=4.0, max_jerk=1000):
+                 max_velocity=1.0,
+                 max_acceleration=4.0,
+                 max_jerk=1000):
         """Count is used for when we have multiple copies of arms"""
-        joint_names = ['%s_joint%d' % (name, i+1) for i in range(num_joints)]
+        joint_names = ['%s_joint%d' % (name, i + 1) for i in range(num_joints)]
         super().__init__(count, name, joint_names, base_name)
 
         # Used for motion planning
@@ -41,6 +45,15 @@ class Arm(RobotComponent):
                                   constraint_z=True,
                                   constraint_alpha_beta=True,
                                   constraint_gamma=True) -> None:
+        """
+        设置IK element的属性
+        :param constraint_x: 是否跟踪x
+        :param constraint_y: 是否跟踪y
+        :param constraint_z: 是否跟踪z
+        :param constraint_alpha_beta: 约束 alpha beta角，也就是朝向角
+        :param constraint_gamma: 约束 gamma 角，也就是自转角
+        :return: 无返回
+        """
         constraints = 0
         if constraint_x:
             constraints |= sim.sim_ik_x_constraint
@@ -61,6 +74,13 @@ class Arm(RobotComponent):
         )
 
     def set_ik_group_properties(self, resolution_method='pseudo_inverse', max_iterations=6, dls_damping=0.1) -> None:
+        """
+        设置 IK group的属性，默认使用伪逆法。
+        :param resolution_method:
+        :param max_iterations:
+        :param dls_damping:
+        :return:
+        """
         try:
             res_method = {'pseudo_inverse': sim.sim_ik_pseudo_inverse_method,
                           'damped_least_squares': sim.sim_ik_damped_least_squares_method,
@@ -86,13 +106,13 @@ class Arm(RobotComponent):
                               max_time_ms: int = 10,
                               relative_to: Object = None
                               ) -> np.ndarray:
-        """Solves an IK group and returns the calculated joint values.
+        """Solves an IK group and returns the calculated joint values. 使用采样法求解IK group，并同时计算对应的关节角度。
 
         This IK method performs a random searches for manipulator configurations
         that matches the given end-effector pose in space. When the tip pose
         is close enough then IK is computed in order to try to bring the
         tip onto the target. This is the method that should be used when
-        the start pose is far from the end pose.
+        the start pose is far from the end pose. 注意，当起点重点差的比较远的时候才适合使用。
 
         We generate 'max_configs' number of samples within X number of 'trials',
         before ranking them according to angular distance.
@@ -133,8 +153,8 @@ class Arm(RobotComponent):
         cyclics, intervals = self.get_joint_intervals()
         low_limits, max_limits = list(zip(*intervals))
         # If there are huge intervals, then limit them
-        low_limits = np.maximum(low_limits, -np.pi*2).tolist()
-        max_limits = np.minimum(max_limits, np.pi*2).tolist()
+        low_limits = np.maximum(low_limits, -np.pi * 2).tolist()
+        max_limits = np.minimum(max_limits, np.pi * 2).tolist()
 
         collision_pairs = []
         if not ignore_collisions:
@@ -165,7 +185,6 @@ class Arm(RobotComponent):
 
         return np.array(valid_joint_positions)
 
-
     def get_configs_for_tip_pose(self,
                                  position: Union[List[float], np.ndarray],
                                  euler: Union[List[float], np.ndarray] = None,
@@ -174,7 +193,7 @@ class Arm(RobotComponent):
                                  trials=300, max_configs=60,
                                  relative_to: Object = None
                                  ) -> List[List[float]]:
-        """Gets a valid joint configuration for a desired end effector pose.
+        """Gets a valid joint configuration for a desired end effector pose. 对于一个期望的末端位姿，给出一个关节空间的可行解。
         Must specify either rotation in euler or quaternions, but not both!
         :param position: The x, y, z position of the target.
         :param euler: The x, y, z orientation of the target (in radians).
@@ -202,7 +221,7 @@ class Arm(RobotComponent):
             euler: Union[List[float], np.ndarray] = None,
             quaternion: Union[List[float], np.ndarray] = None,
             relative_to: Object = None) -> List[float]:
-        """Solves an IK group and returns the calculated joint values.
+        """Solves an IK group and returns the calculated joint values. 使用雅克比矩阵计算IK
 
         This IK method performs a linearisation around the current robot
         configuration via the Jacobian. The linearisation is valid when the
@@ -258,7 +277,7 @@ class Arm(RobotComponent):
 
     def get_path_from_cartesian_path(self, path: CartesianPath
                                      ) -> ArmConfigurationPath:
-        """Translate a path from cartesian space, to arm configuration space.
+        """Translate a path from cartesian space, to arm configuration space. 将笛卡尔坐标系中的路径转变为关节空间中的路径
 
         Note: It must be possible to reach the start of the path via a linear
         path, otherwise an error will be raised.
@@ -284,7 +303,7 @@ class Arm(RobotComponent):
                         quaternion: Union[List[float], np.ndarray] = None,
                         steps=50, ignore_collisions=False,
                         relative_to: Object = None) -> ArmConfigurationPath:
-        """Gets a linear configuration path given a target pose.
+        """Gets a linear configuration path given a target pose.  生成机器人末端点到点之间的直线轨迹
 
         Generates a path that drives a robot from its current configuration
         to its target dummy in a straight line (i.e. shortest path in Cartesian
@@ -343,6 +362,7 @@ class Arm(RobotComponent):
                            relative_to: Object = None
                            ) -> ArmConfigurationPath:
         """Gets a non-linear (planned) configuration path given a target pose.
+        这个nonlinear path主要依靠的是VREP中集成的OMPL，调用了外部生成的 simAddOnScript_PyRep.lua
 
         A path is generated by finding several configs for a pose, and ranking
         them according to the distance in configuration space (smaller is

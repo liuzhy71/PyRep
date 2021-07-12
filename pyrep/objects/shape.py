@@ -1,9 +1,9 @@
 from typing import List, Tuple
 import numpy as np
-from pyrep.backend import sim
-from pyrep.objects.object import Object, object_type_to_class
-from pyrep.const import ObjectType, PrimitiveShape, TextureMappingMode
-from pyrep.textures.texture import Texture
+from PyRep.pyrep.backend import sim
+from PyRep.pyrep.objects.object import Object, object_type_to_class
+from PyRep.pyrep.const import ObjectType, PrimitiveShape, TextureMappingMode
+from PyRep.pyrep.textures.texture import Texture
 import os
 import collections
 

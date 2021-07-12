@@ -1,6 +1,6 @@
 import unittest
-from tests.core import TestCore
-from pyrep.sensors.gyroscope import Gyroscope
+from PyRep.tests.core import TestCore
+from PyRep.pyrep.sensors.gyroscope import Gyroscope
 
 
 class TestGyroscope(TestCore):

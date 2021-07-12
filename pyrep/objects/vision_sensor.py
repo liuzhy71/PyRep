@@ -1,9 +1,9 @@
 import math
 from typing import List, Union, Sequence
-from pyrep.backend import sim
-from pyrep.objects.object import Object, object_type_to_class
+from PyRep.pyrep.backend import sim
+from PyRep.pyrep.objects.object import Object, object_type_to_class
 import numpy as np
-from pyrep.const import ObjectType, PerspectiveMode, RenderMode
+from PyRep.pyrep.const import ObjectType, PerspectiveMode, RenderMode
 
 
 class VisionSensor(Object):
