@@ -100,7 +100,7 @@ The best way to see how PyRep can help in your research is to look at the exampl
 #### Launching the simulation
 
 ```python
-from pyrep import PyRep
+from PyRep.pyrep import PyRep
 
 pr = PyRep()
 # Launch the application with a scene file in headless mode
@@ -117,8 +117,8 @@ pr.shutdown()  # Close the application
 #### Modifying the Scene
 
 ```python
-from pyrep.objects.shape import Shape
-from pyrep.const import PrimitiveShape
+from PyRep.pyrep.objects.shape import Shape
+from PyRep.pyrep.const import PrimitiveShape
 
 object = Shape.create(type=PrimitiveShape.CYLINDER, 
                       color=[r,g,b], size=[w, h, d],
@@ -135,9 +135,9 @@ Use the robot ttm files defined in robots/ttms. These have been altered slightly
 The 'tip' of the robot may not be where you want it, so feel free to play around with this.
 
 ```python
-from pyrep import PyRep
-from pyrep.robots.arms.panda import Panda
-from pyrep.robots.end_effectors.panda_gripper import PandaGripper
+from PyRep.pyrep import PyRep
+from PyRep.pyrep.robots.arms.panda import Panda
+from PyRep.pyrep.robots.end_effectors.panda_gripper import PandaGripper
 
 pr = PyRep()
 # Launch the application with a scene file that contains a robot

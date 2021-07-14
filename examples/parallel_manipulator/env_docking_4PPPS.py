@@ -20,7 +20,6 @@ logging.basicConfig(level=logging.DEBUG,
 
 logger = logging.getLogger(__name__)
 
-
 SCENE_FILE = join(dirname(abspath(__file__)), 'cabin_docking_20210713_widergap.ttt')
 
 # 固定藏段可以做位置调整
@@ -40,14 +39,14 @@ class PM4PPPSPegInHoleEnv(object):
         self.agent.set_motor_locked_at_zero_velocity(False)
         self.stationary_cabin = Shape('cabin_static_front_phy')
         self.stationary_cabin_tip = Dummy('cabin_static_face_center')
-        self.agent_ee_tip = self.agent.get_tip()
+        self.agent_ee_tip = Dummy('PM_4PPPS_front_center')
         self.initial_joint_positions = self.agent.get_joint_positions()
 
     def _get_state(self):
         # 获取舱段中心点的位置、速度，以及视觉触感器获取的图像
         return np.concatenate([self.agent.get_joint_positions(),
                                self.agent.get_joint_velocities(),
-                               self.stationary_cabin_tip.get_position()])
+                               self.agent_ee_tip.get_position()])
 
     def reset(self):
         # 设置舱段初始位姿，随机给定
@@ -81,42 +80,46 @@ class Agent(object):
         pass
 
 
-pr = PyRep()
-pr.launch(SCENE_FILE, headless=False)
-# pr.set_simulation_timestep(0.0001)
-pr.start()
-robot = PM_4PPPS()
-waypoints = [Dummy('waypoint{}'.format(i+1)) for i in range(2)]
-tip = Dummy('PM_4PPPS_front_center')
+def manual_test():
+    pr = PyRep()
+    pr.launch(SCENE_FILE, headless=False)
+    # pr.set_simulation_timestep(0.0001)
+    pr.start()
+    robot = PM_4PPPS()
+    waypoints = [Dummy('waypoint{}'.format(i + 1)) for i in range(2)]
+    tip = Dummy('PM_4PPPS_front_center')
 
-print('Planning path to the stationary cabin ...')
-path = robot.get_path(position=waypoints[0].get_position(),
-                      quaternion=waypoints[0].get_quaternion())
-# path.visualize()  # Let's see what the path looks like
-# pr.step()
-print('Executing plan ...')
-done = False
-while not done:
-    done = path.step()
-    pr.step()
-    logger.debug('distance: {}'.format(tip.get_pose()-waypoints[0].get_pose()))
-# path.clear_visualization()
+    print('Planning path to the stationary cabin ...')
+    path = robot.get_path(position=waypoints[0].get_position(),
+                          quaternion=waypoints[0].get_quaternion())
+    # path.visualize()  # Let's see what the path looks like
+    # pr.step()
+    print('Executing plan ...')
+    done = False
+    while not done:
+        done = path.step()
+        pr.step()
+        logger.debug('distance: {}'.format(tip.get_pose() - waypoints[0].get_pose()))
+    # path.clear_visualization()
 
-print('Insert the cabin ...')
-path = robot.get_path(position=waypoints[1].get_position(),
-                      quaternion=waypoints[1].get_quaternion())
-# path.visualize()  # Let's see what the path looks like
-# pr.step()
-print('Executing plan ...')
-done = False
-while not done:
-    done = path.step()
-    pr.step()
-    logger.debug('distance: {}'.format(tip.get_pose() - waypoints[1].get_pose()))
-# path.clear_visualization()
+    print('Insert the cabin ...')
+    path = robot.get_path(position=waypoints[1].get_position(),
+                          quaternion=waypoints[1].get_quaternion())
+    # path.visualize()  # Let's see what the path looks like
+    # pr.step()
+    print('Executing plan ...')
+    done = False
+    while not done:
+        done = path.step()
+        pr.step()
+        logger.debug('distance: {}'.format(tip.get_pose() - waypoints[1].get_pose()))
+    # path.clear_visualization()
 
-print('Done ...')
-input('Press enter to finish ...')
-pr.stop()
-pr.shutdown()
+    print('Done ...')
+    input('Press enter to finish ...')
+    pr.stop()
+    pr.shutdown()
 
+
+if __name__ == '__main__':
+    manual_test()
