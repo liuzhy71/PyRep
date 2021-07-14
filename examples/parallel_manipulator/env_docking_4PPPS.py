@@ -13,8 +13,15 @@ from PyRep.pyrep.robots.parallel_manipulators.pm_4ppps import PM_4PPPS
 from PyRep.pyrep.objects.shape import Shape
 from PyRep.pyrep.objects.dummy import Dummy
 import numpy as np
+import logging
 
-SCENE_FILE = join(dirname(abspath(__file__)), 'cabin_docking_20210709.ttt')
+logging.basicConfig(level=logging.DEBUG,
+                    format='[%(filename)s] [%(module)s] [%(funcName)s] [line:%(lineno)d] %(levelname)s %(message)s')
+
+logger = logging.getLogger(__name__)
+
+
+SCENE_FILE = join(dirname(abspath(__file__)), 'cabin_docking_20210713_widergap.ttt')
 
 # 固定藏段可以做位置调整
 POSITION_MIN = [-0.05, -0.05, 0.05]
@@ -76,20 +83,37 @@ class Agent(object):
 
 pr = PyRep()
 pr.launch(SCENE_FILE, headless=False)
+# pr.set_simulation_timestep(0.0001)
 pr.start()
 robot = PM_4PPPS()
-waypoint = Dummy('waypoint')
+waypoints = [Dummy('waypoint{}'.format(i+1)) for i in range(2)]
+tip = Dummy('PM_4PPPS_front_center')
+
 print('Planning path to the stationary cabin ...')
-path = robot.get_path(position=waypoint.get_position(),
-                      quaternion=waypoint.get_quaternion())
-path.visualize()  # Let's see what the path looks like
-pr.step()
+path = robot.get_path(position=waypoints[0].get_position(),
+                      quaternion=waypoints[0].get_quaternion())
+# path.visualize()  # Let's see what the path looks like
+# pr.step()
 print('Executing plan ...')
 done = False
 while not done:
     done = path.step()
     pr.step()
-path.clear_visualization()
+    logger.debug('distance: {}'.format(tip.get_pose()-waypoints[0].get_pose()))
+# path.clear_visualization()
+
+print('Insert the cabin ...')
+path = robot.get_path(position=waypoints[1].get_position(),
+                      quaternion=waypoints[1].get_quaternion())
+# path.visualize()  # Let's see what the path looks like
+# pr.step()
+print('Executing plan ...')
+done = False
+while not done:
+    done = path.step()
+    pr.step()
+    logger.debug('distance: {}'.format(tip.get_pose() - waypoints[1].get_pose()))
+# path.clear_visualization()
 
 print('Done ...')
 input('Press enter to finish ...')

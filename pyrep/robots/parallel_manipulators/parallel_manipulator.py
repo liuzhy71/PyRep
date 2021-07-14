@@ -29,11 +29,11 @@ class ParallelManipulator(RobotComponent):
                  real_joint_names: [],
                  virtual_joint_names: [],
                  base_name: str = None,
-                 max_velocity=10,
-                 max_acceleration=10.0,
-                 max_jerk=1000):
+                 max_velocity=0.4,
+                 max_acceleration=1,
+                 max_jerk=1):
         """
-        count: is used for when we have multiple copies of arms
+        count: is used for when we have multiple copies of parallel_manipulators
         name: name of the robot
         num_limbs: number of limbs
         num_joints: number of independent controlled joints
@@ -56,15 +56,19 @@ class ParallelManipulator(RobotComponent):
         # 这里直接调用了PyRep中Object的init方法，获取Dummy的handle
         self._ik_target = Dummy('%s_target%s' % (name, suffix))
         self._ik_tip = Dummy('%s_tip%s' % (name, suffix))
+        self._ik_limb_tip = [Dummy('SPJ_center_tip_{}'.format(i+1)) for i in range(4)]
+        self._ik_limb_target = [Dummy('SPJ_center_target_{}'.format(i+1)) for i in range(4)]
         self._ik_group = sim.simGetIkGroupHandle('%s_ik%s' % (name, suffix))
         self._collision_collection = sim.simGetCollectionHandle(
             '%s_collection%s' % (name, suffix))
 
-    def set_ik_element_properties(self, constraint_x=True, constraint_y=True,
+    def set_ik_element_properties(self,
+                                  tip: Dummy,
+                                  constraint_x=True,
+                                  constraint_y=True,
                                   constraint_z=True,
                                   constraint_alpha_beta=True,
                                   constraint_gamma=True) -> None:
-
         constraints = 0
         if constraint_x:
             constraints |= sim.sim_ik_x_constraint
@@ -78,13 +82,16 @@ class ParallelManipulator(RobotComponent):
             constraints |= sim.sim_ik_gamma_constraint
         sim.simSetIkElementProperties(
             ikGroupHandle=self._ik_group,
-            tipDummyHandle=self._ik_tip.get_handle(),
+            tipDummyHandle=tip.get_handle(),
             constraints=constraints,
             precision=None,
             weight=None,
         )
 
-    def set_ik_group_properties(self, resolution_method='pseudo_inverse', max_iterations=1, dls_damping=0.1) -> None:
+    def set_ik_group_properties(self,
+                                resolution_method='pseudo_inverse',
+                                max_iterations: int = 1,
+                                dls_damping: float = 0.1) -> None:
         try:
             res_method = {'pseudo_inverse': sim.sim_ik_pseudo_inverse_method,
                           'damped_least_squares': sim.sim_ik_damped_least_squares_method,
@@ -194,7 +201,8 @@ class ParallelManipulator(RobotComponent):
                                  euler: Union[List[float], np.ndarray] = None,
                                  quaternion: Union[List[float], np.ndarray] = None,
                                  ignore_collisions=False,
-                                 trials=300, max_configs=60,
+                                 trials=300,
+                                 max_configs=60,
                                  relative_to: Object = None
                                  ) -> List[List[float]]:
         """Gets a valid joint configuration for a desired end effector pose.
@@ -281,7 +289,7 @@ class ParallelManipulator(RobotComponent):
 
     def get_path_from_cartesian_path(self, path: CartesianPath
                                      ) -> ParallelManipulatorConfigurationPath:
-        """Translate a path from cartesian space, to arm configuration space.
+        """Translate a path from cartesian space, to parallel_manipulator configuration space.
 
         Note: It must be possible to reach the start of the path via a linear
         path, otherwise an error will be raised.
@@ -290,7 +298,7 @@ class ParallelManipulator(RobotComponent):
             a configuration-space path.
         :raises: ConfigurationPathError if no path could be created.
 
-        :return: A path in the arm configuration space.
+        :return: A path in the parallel_manipulator configuration space.
         """
         handles = [j.get_handle() for j in self.joints]
         _, ret_floats, _, _ = utils.script_call(
@@ -305,7 +313,7 @@ class ParallelManipulator(RobotComponent):
     def get_linear_path(self, position: Union[List[float], np.ndarray],
                         euler: Union[List[float], np.ndarray] = None,
                         quaternion: Union[List[float], np.ndarray] = None,
-                        steps=50,
+                        steps=100,
                         ignore_collisions=False,
                         relative_to: Object = None) -> ParallelManipulatorConfigurationPath:
         """Gets a linear configuration path given a target pose.
@@ -329,13 +337,22 @@ class ParallelManipulator(RobotComponent):
         or an Object relative to whose reference frame we want the pose.
         :raises: ConfigurationPathError if no path could be created.
 
-        :return: A linear path in the arm configuration space.
+        :return: A linear path in the parallel_manipulator configuration space.
         """
         if not ((euler is None) ^ (quaternion is None)):
             raise ConfigurationPathError(
                 'Specify either euler or quaternion values, but not both.')
 
         prev_pose = self._ik_target.get_pose()
+        for i in self._ik_limb_target:
+            i.set_parent(self._ik_target)
+        robot_objects = sim.simGetObjectsInTree(self._ik_target.get_handle(), sim.sim_handle_all, 0)
+        robot_initial_config = sim.simGetConfigurationTree(self._ik_target.get_handle())
+
+        for i in range(len(robot_objects)):
+            sim.simResetDynamicObject(robot_objects[i])
+        sim.simSetConfigurationTree(robot_initial_config)
+
         self._ik_target.set_position(position, relative_to)
         if euler is not None:
             self._ik_target.set_orientation(euler, relative_to)
@@ -349,7 +366,10 @@ class ParallelManipulator(RobotComponent):
         joint_options = None
         ret_floats = sim.generateIkPath(
             self._ik_group, handles, steps, collision_pairs, joint_options)
+        sim.simSetConfigurationTree(robot_initial_config)
         self._ik_target.set_pose(prev_pose)
+        for i in self._ik_limb_target:
+            i.set_parent(self._ik_tip)
         if len(ret_floats) == 0:
             raise ConfigurationPathError('Could not create path.')
         return ParallelManipulatorConfigurationPath(self, ret_floats)
@@ -394,7 +414,7 @@ class ParallelManipulator(RobotComponent):
         or an Object relative to whose reference frame we want the pose.
         :raises: ConfigurationPathError if no path could be created.
 
-        :return: A non-linear path in the arm configuration space.
+        :return: A non-linear path in the parallel_manipulator configuration space.
         """
 
         handles = [j.get_handle() for j in self.joints]
@@ -454,7 +474,7 @@ class ParallelManipulator(RobotComponent):
 
         :raises: ConfigurationPathError if neither a linear or non-linear path
             can be created.
-        :return: A linear or non-linear path in the arm configuration space.
+        :return: A linear or non-linear path in the parallel_manipulator configuration space.
         """
         try:
             p = self.get_linear_path(position, euler, quaternion,
@@ -472,13 +492,23 @@ class ParallelManipulator(RobotComponent):
         return p
 
     def get_tip(self) -> Dummy:
-        """Gets the tip of the arm.
+        """Gets the tip of the parallel_manipulator.
 
-        Each arm is required to have a tip for path planning.
+        Each parallel_manipulator is required to have a tip for path planning.
 
-        :return: The tip of the arm.
+        :return: The tip of the parallel_manipulator.
         """
         return self._ik_tip
+
+    def get_target(self) -> Dummy:
+        """
+        Gets the tip of the parallel manipulator.
+
+        Each parallel_manipulator is required to have a tip for path planning.
+
+        :return: The tip of the parallel manipulator..
+        """
+        return self._ik_target
 
     def get_jacobian(self):
         """Calculates the Jacobian.
@@ -492,7 +522,7 @@ class ParallelManipulator(RobotComponent):
         jacobian = np.array(jacobian).reshape((rows, cols), order='F')
         return jacobian
 
-    def check_arm_collision(self, obj: 'Object' = None) -> bool:
+    def check_parallel_manipulator_collision(self, obj: 'Object' = None) -> bool:
         """Checks whether two entities are colliding.
 
         :param obj: The other collidable object to check collision against,

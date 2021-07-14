@@ -45,7 +45,8 @@ class PyRep(object):
                 'COPPELIASIM_ROOT was not a correct path. '
                 'See installation instructions')
 
-    def _run_ui_thread(self, scene_file: str, headless: bool,
+    def _run_ui_thread(self, scene_file: str,
+                       headless: bool,
                        verbosity: Verbosity) -> None:
         # Need this otherwise extensions will not be loaded
         os.chdir(self._vrep_root)

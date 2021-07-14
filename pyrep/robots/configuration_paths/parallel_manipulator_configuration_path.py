@@ -3,6 +3,12 @@ from PyRep.pyrep.robots.configuration_paths.configuration_path import (
     ConfigurationPath)
 import numpy as np
 from typing import List, Optional, Union
+import logging
+
+logging.basicConfig(level=logging.DEBUG,
+                    format='[%(filename)s] [%(module)s] [%(funcName)s] [line:%(lineno)d] %(levelname)s %(message)s')
+
+logger = logging.getLogger(__name__)
 
 
 class ParallelManipulatorConfigurationPath(ConfigurationPath):
@@ -190,6 +196,8 @@ class ParallelManipulatorConfigurationPath(ConfigurationPath):
                     self._PM.set_joint_target_positions(qs)
                     break
         if state == 1:
+            # logger.debug('the distance from the ik tip to the ik target is {}'
+            #              .format(self._PM.get_tip().get_pose()-self._PM.get_target().get_pose()))
             sim.simRMLRemove(self._rml_handle)
             self.last_idx = 0
         return state

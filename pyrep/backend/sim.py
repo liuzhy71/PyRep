@@ -4,7 +4,6 @@ from ._sim_cffi import ffi, lib
 import numpy as np
 import collections
 
-
 SShapeVizInfo = collections.namedtuple(
     'SShapeVizInfo',
     [
@@ -222,7 +221,7 @@ def simBreakForceSensor(forceSensorHandle):
 
 
 def simReadForceSensor(forceSensorHandle):
-    forceVector  = ffi.new('float[3]')
+    forceVector = ffi.new('float[3]')
     torqueVector = ffi.new('float[3]')
     state = lib.simReadForceSensor(forceSensorHandle, forceVector, torqueVector)
     return state, list(forceVector), list(torqueVector)
@@ -266,9 +265,9 @@ def simReadVisionSensor(sensorHandle):
     if state == 0:
         s = 0
         for i in range(auxValuesCount[0]):
-            auxValues2.append(auxValues[s:s+auxValuesCount[i+1]])
-            s += auxValuesCount[i+1]
-        #free C buffers
+            auxValues2.append(auxValues[s:s + auxValuesCount[i + 1]])
+            s += auxValuesCount[i + 1]
+        # free C buffers
         simReleaseBuffer(auxValues)
         simReleaseBuffer(auxValuesCount)
     return state, auxValues2
@@ -280,7 +279,7 @@ def simGetVisionSensorImage(sensorHandle, resolution):
     s = ffi.sizeof(T)  # datatype size
     np_T = np.dtype('f{:d}'.format(s))  # Numpy equivalent, e.g. float is 'f4'
     # Wrap the buffer with numpy.
-    img = np.frombuffer(ffi.buffer(img_buffer, resolution[0]*resolution[1]*3*s), np_T)
+    img = np.frombuffer(ffi.buffer(img_buffer, resolution[0] * resolution[1] * 3 * s), np_T)
     img = img.reshape(resolution[1], resolution[0], 3)
     img = np.flip(img, 0).copy()  # Image is upside-down
     simReleaseBuffer(ffi.cast('char *', img_buffer))
@@ -295,7 +294,7 @@ def simGetVisionSensorDepthBuffer(sensorHandle, resolution, in_meters):
     s = ffi.sizeof(T)  # datatype size
     np_T = np.dtype('f{:d}'.format(s))  # Numpy equivalent, e.g. float is 'f4'
     # Wrap the buffer with numpy.
-    img = np.frombuffer(ffi.buffer(img_buffer, resolution[0]*resolution[1]*s), np_T)
+    img = np.frombuffer(ffi.buffer(img_buffer, resolution[0] * resolution[1] * s), np_T)
     img = img.reshape(resolution[1], resolution[0])
     img = np.flip(img, 0).copy()  # Image is upside-down
     simReleaseBuffer(ffi.cast('char *', img_buffer))
@@ -758,7 +757,19 @@ def simGetObjectMatrix(objectHandle, relativeToObjectHandle):
     return list(matrix)
 
 
-def simGetObjectsInTree(treeBaseHandle, objectType, options):
+def simGetObjectsInTree(treeBaseHandle: int, objectType, options):
+    """
+    Retrieves object handles in a given hierarchy tree.
+
+    :param treeBaseHandle: the handle of the object that describes the hierarchy tree, or sim_handle_scene for all
+            objects in the scene.
+    :param objectType: the object type to retrieve or sim_handle_all for any type of object in the tree
+    :param options: bit-coded:
+                    bit0 set (1): exclude the tree base from the returned array
+                    bit1 set (2): include in the returned array only the object's first children. If treeBaseHandle is
+                    sim_handle_scene, then only parentless objects will be included.
+    :return: a list of the object in the tree
+    """
     objectCount = ffi.new('int *')
     handles = lib.simGetObjectsInTree(treeBaseHandle, objectType, options,
                                       objectCount)
@@ -1019,7 +1030,7 @@ def simGetShapeMesh(shapeHandle):
     retVerticies = [outVerticies[0][i]
                     for i in range(outVerticiesCount[0])]
     retIndices = [outIndices[0][i]
-                    for i in range(outIndicesCount[0])]
+                  for i in range(outIndicesCount[0])]
     outNormals = [outIndices[0][i]
                   for i in range(outIndicesCount[0] * 3)]
 
@@ -1048,7 +1059,7 @@ def simGetShapeViz(shapeHandle, index):
             ffi.buffer(info.texture, textureSize), np.uint8)
         texture = texture.tolist()
         textureCoords = [info.textureCoords[i] for i in
-                        range(info.indicesSize * 2)]
+                         range(info.indicesSize * 2)]
 
     return SShapeVizInfo(
         vertices=vertices,
@@ -1083,7 +1094,7 @@ def simSetJointMode(shapeHandle, mode):
 
 
 def simCreatePath(attributes, intParams, floatParams, color):
-    handle = lib.simCreatePath(attributes, intParams, floatParams, color + [0.]*3 + [0.25]*3 + [0.]*3)
+    handle = lib.simCreatePath(attributes, intParams, floatParams, color + [0.] * 3 + [0.25] * 3 + [0.] * 3)
     _check_return(handle)
     return handle
 
@@ -1357,7 +1368,7 @@ def simInsertVoxelsIntoOctree(octreeHandle, options, points, color, tag):
     if tag is None:
         tag = ffi.NULL
     ret = lib.simInsertVoxelsIntoOctree(octreeHandle, options, points,
-                                        len(points)//3, color, tag, ffi.NULL)
+                                        len(points) // 3, color, tag, ffi.NULL)
     _check_return(ret)
     return ret
 
@@ -1368,7 +1379,7 @@ def simRemoveVoxelsFromOctree(octreeHandle, options, points):
     if points is ffi.NULL:
         pointCount = 0
     else:
-        pointCount = len(points)//3
+        pointCount = len(points) // 3
     ret = lib.simRemoveVoxelsFromOctree(octreeHandle, options, points,
                                         pointCount, ffi.NULL)
     _check_return(ret)
@@ -1381,7 +1392,7 @@ def simGetOctreeVoxels(octreeHandle):
     if ret == ffi.NULL:
         return []
     pointCount = pointCountPointer[0]
-    return list(ret[0:pointCount*3])
+    return list(ret[0:pointCount * 3])
 
 
 def simInsertObjectIntoOctree(octreeHandle, objectHandle, options,
@@ -1396,14 +1407,14 @@ def simInsertObjectIntoOctree(octreeHandle, objectHandle, options,
 
 def simSubtractObjectFromOctree(octreeHandle, objectHandle, options):
     ret = lib.simSubtractObjectFromOctree(octreeHandle, objectHandle, options,
-                                        ffi.NULL)
+                                          ffi.NULL)
     _check_return(ret)
     return ret
 
 
 def simCheckOctreePointOccupancy(octreeHandle, options, points):
     ret = lib.simCheckOctreePointOccupancy(octreeHandle, options, points,
-                                           len(points)//3, ffi.NULL, ffi.NULL,
+                                           len(points) // 3, ffi.NULL, ffi.NULL,
                                            ffi.NULL)
     _check_return(ret)
     if ret == 1:
@@ -1438,7 +1449,8 @@ def simGetContactInfo(contact_obj_handle, get_contact_normal):
     return contact_list
 
 
-def simGetConfigForTipPose(ikGroupHandle, jointHandles, thresholdDist, maxTimeInMs, metric, collisionPairs, jointOptions, lowLimits, ranges):
+def simGetConfigForTipPose(ikGroupHandle, jointHandles, thresholdDist, maxTimeInMs, metric, collisionPairs,
+                           jointOptions, lowLimits, ranges):
     jointCnt = len(jointHandles)
     collisionPairCnt = len(collisionPairs) // 2
     collisionPairs = ffi.NULL if len(collisionPairs) == 0 else collisionPairs
@@ -1484,7 +1496,7 @@ def simGetDecimatedMesh(inVertices, inIndices, decimationPercent):
     retVerticies = [outVerticies[0][i]
                     for i in range(outVerticiesCount[0])]
     retIndices = [outIndices[0][i]
-                    for i in range(outIndicesCount[0])]
+                  for i in range(outIndicesCount[0])]
 
     simReleaseBuffer(ffi.cast('char *', outVerticies[0]))
     simReleaseBuffer(ffi.cast('char *', outIndices[0]))
@@ -1505,6 +1517,6 @@ def simAddForce(shapeHandle, position, force):
 
 def simAddForceAndTorque(shapeHandle, force, torque):
     ret = lib.simAddForceAndTorque(shapeHandle,
-                          ffi.NULL if force is None else force,
-                          ffi.NULL if torque is None else torque)
+                                   ffi.NULL if force is None else force,
+                                   ffi.NULL if torque is None else torque)
     _check_return(ret)

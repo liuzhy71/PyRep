@@ -1,9 +1,12 @@
+import logging
+import time
+from typing import List, Optional, Union
+
+import numpy as np
+
 from PyRep.pyrep.backend import sim
 from PyRep.pyrep.robots.configuration_paths.configuration_path import (
     ConfigurationPath)
-import numpy as np
-from typing import List, Optional, Union
-import logging, time
 
 logging.basicConfig(level=logging.DEBUG,
                     format='[%(filename)s] [%(module)s] [%(funcName)s] [line:%(lineno)d] %(levelname)s %(message)s')

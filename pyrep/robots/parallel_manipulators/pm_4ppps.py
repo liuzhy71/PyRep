@@ -9,12 +9,17 @@ class PM_4PPPS(ParallelManipulator):
         """
         """
         self.name = name
-        self.joint_names = [[] for _ in range(4)]
+        self.real_joint_names = [[] for _ in range(4)]
         for i in range(4):
             for joint_dir in ['X', 'Y', 'Z']:
-                self.joint_names[i].append('PM_4PPPS_PJ_{}_{}'.format(joint_dir, i + 1))
-        joint_names_flat = [joint for limb in self.joint_names for joint in limb]
-        super().__init__(count, 'PM_4PPPS', num_limbs=4, num_joints=12, joint_names=joint_names_flat)
+                self.real_joint_names[i].append('PM_4PPPS_PJ_{}_{}'.format(joint_dir, i + 1))
+        real_joint_names_flat = [joint for limb in self.real_joint_names for joint in limb]
+        self.virtual_joint_names = ['PM_4PPPS_virtual_joint_{}'.format(i + 1) for i in range(6)]
+        super().__init__(count, 'PM_4PPPS',
+                         num_limbs=4,
+                         num_joints=12,
+                         real_joint_names=real_joint_names_flat,
+                         virtual_joint_names=self.virtual_joint_names)
 
         self.force_sensor_names = []
         for i in range(4):

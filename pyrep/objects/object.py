@@ -38,6 +38,7 @@ class Object(object):
     def exists(name: str) -> bool:
         """Checks if the given object is in the scene.
 
+        :param name:
         :param id: name/id of object. If the name is appended by a "@alt"
             suffix, then the object handle based on the object's alternative
             name will be retrieved.
